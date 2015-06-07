@@ -504,9 +504,13 @@ class HeaderTestCases(unittest.TestCase):
         test_rects = self.item_rects
         test_rects.insert(0, self.ctrl.ClientRect())
 
-        self.assertEquals(
-            test_rects,
-            self.ctrl.ClientRects())
+        client_rects = self.ctrl.ClientRects()
+        self.assertEquals(len(test_rects), len(client_rects))
+        for i in range(len(test_rects)):
+            self.assertEquals(test_rects[i].left, client_rects[i].left)
+            self.assertEquals(test_rects[i].right, client_rects[i].right)
+            self.assertEquals(test_rects[i].top, client_rects[i].top)
+            self.failIf(abs(test_rects[i].bottom - client_rects[i].bottom) > 2) # may be equal to 17 or 19
 
     def testGetColumnText(self):
         for i in range(0, 3):
@@ -531,9 +535,9 @@ class StatusBarTestCases(unittest.TestCase):
 
         self.texts = ["Long text", "", "Status Bar"]
         self.part_rects = [
-            RECT(0, 2, 65, 20),
-            RECT(67, 2, 90, 20),
-            RECT(92, 2, 357, 20)]
+            RECT(0, 2, 65, 22),
+            RECT(67, 2, 90, 22),
+            RECT(92, 2, 261, 22)]
         self.app = app
         self.dlg = app.MicrosoftControlSpy
         self.ctrl = app.MicrosoftControlSpy.StatusBar.WrapperObject()
@@ -600,13 +604,25 @@ class StatusBarTestCases(unittest.TestCase):
         "Make sure the part rectangles are retrieved correctly"
 
         for i in range(0, self.ctrl.PartCount()):
-            self.assertEquals (self.ctrl.GetPartRect(i), self.part_rects[i])
+            part_rect = self.ctrl.GetPartRect(i)
+            self.assertEquals (part_rect.left, self.part_rects[i].left)
+            if i != self.ctrl.PartCount() - 1:
+                self.assertEquals (part_rect.right, self.part_rects[i].right)
+            self.assertEquals (part_rect.top, self.part_rects[i].top)
+            self.failIf (abs(part_rect.bottom - self.part_rects[i].bottom) > 2)
 
         self.assertRaises(IndexError, self.ctrl.GetPartRect, 99)
 
     def testClientRects(self):
         self.assertEquals(self.ctrl.ClientRect(), self.ctrl.ClientRects()[0])
-        self.assertEquals(self.part_rects, self.ctrl.ClientRects()[1:])
+        client_rects = self.ctrl.ClientRects()[1:]
+        for i in range(len(client_rects)):
+            client_rect = client_rects[i]
+            self.assertEquals (self.part_rects[i].left, client_rect.left)
+            if i != len(client_rects) - 1:
+                self.assertEquals (self.part_rects[i].right, client_rect.right)
+            self.assertEquals (self.part_rects[i].top, client_rect.top)
+            self.failIf (abs(self.part_rects[i].bottom - client_rect.bottom) > 2)
 
     def testGetPartText(self):
         self.assertRaises(IndexError, self.ctrl.GetPartText, 99)
@@ -639,16 +655,16 @@ class TabControlTestCases(unittest.TestCase):
             "Earth", "Venus", "Mercury", "Sun"]
 
         self.rects = [
-            RECT(2,2,63,21),
-            RECT(63,2,141,21),
-            RECT(141,2,212,21),
-            RECT(212,2,280,21),
-            RECT(280,2,348,21),
-            RECT(2,21,68,40),
-            RECT(68,21,135,40),
-            RECT(135,21,207,40),
-            RECT(207,21,287,40),
-            RECT(287,21,348,40),
+            RECT(2,2,80,21),
+            RECT(80,2,174,21),
+            RECT(174,2,261,21),
+            RECT(2,21,91,40),
+            RECT(91,21,180,40),
+            RECT(180,21,261,40),
+            RECT(2,40,64,59),
+            RECT(64,40,131,59),
+            RECT(131,40,206,59),
+            RECT(206,40,261,59),
         ]
 
         self.app = app
@@ -690,7 +706,7 @@ class TabControlTestCases(unittest.TestCase):
             self.assertEquals(getattr(self.ctrl, prop_name)(), props[prop_name])
 
     def testRowCount(self):
-        self.assertEquals(2, self.ctrl.RowCount())
+        self.assertEquals(3, self.ctrl.RowCount())
 
     def testGetSelectedTab(self):
         self.assertEquals(6, self.ctrl.GetSelectedTab())
